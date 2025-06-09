@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Job Search Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0077b5 0%, #004182 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #0077b5;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .url-input-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+
+        .url-input-section h3 {
+            margin-bottom: 15px;
+            color: #0077b5;
+        }
+
+        .url-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        #linkedinUrl {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .extract-btn {
+            padding: 12px 25px;
+            background: #0077b5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .extract-btn:hover {
+            background: #005885;
+        }
+
+        .instructions {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #0077b5;
+            margin-bottom: 20px;
+        }
+
+        .jobs-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .job-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .job-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .job-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #0077b5;
+            margin-bottom: 8px;
+        }
+
+        .company-name {
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .job-details {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .job-details span {
+            display: inline-block;
+            margin-right: 15px;
+            margin-bottom: 5px;
+        }
+
+        .job-description {
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            max-height: 100px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .job-description.expanded {
+            max-height: none;
+        }
+
+        .expand-btn {
+            background: none;
+            border: none;
+            color: #0077b5;
+            cursor: pointer;
+            font-size: 0.9em;
+            text-decoration: underline;
+        }
+
+        .job-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 8px 15px;
+            border: 1px solid #0077b5;
+            background: white;
+            color: #0077b5;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #0077b5;
+            color: white;
+        }
+
+        .action-btn.applied {
+            background: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+
+        .action-btn.interested {
+            background: #ffc107;
+            border-color: #ffc107;
+            color: #333;
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #0077b5;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            min-width: 200px;
+        }
+
+        .export-btn {
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .export-btn:hover {
+            background: #218838;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .url-container {
+                flex-direction: column;
+            }
+            
+            .jobs-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 LinkedIn Job Search Tracker</h1>
+            <p>Extract and organize job listings for efficient application management</p>
+        </div>
+
+        <div class="url-input-section">
+            <h3>Step 1: Paste LinkedIn Job Search URL</h3>
+            <div class="url-container">
+                <input type="text" id="linkedinUrl" 
+                       placeholder="https://www.linkedin.com/jobs/search/?keywords=engineering%20manager&location=..."
+                       value="https://www.linkedin.com/jobs/search/?currentJobId=4242939877&distance=25&f_AL=true&f_TPR=r86400&geoId=103644278&keywords=engineering%20manager&origin=JOB_SEARCH_PAGE_JOB_FILTER&refresh=true&sortBy=R">
+                <button class="extract-btn" onclick="extractJobInfo()">Extract Jobs</button>
+            </div>
+            
+            <div class="instructions">
+                <strong>How to use:</strong>
+                <br>1. Go to LinkedIn and perform your job search
+                <br>2. Copy the URL from your browser
+                <br>3. Paste it above and click "Extract Jobs"
+                <br>4. The tool will simulate extracting job data for tracking
+                <br><em>Note: This is a demo that shows sample data. In a real implementation, this would need to be a browser extension or desktop app.</em>
+            </div>
+        </div>
+
+        <div class="stats-section" id="statsSection" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-number" id="totalJobs">0</div>
+                <div class="stat-label">Total Jobs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="appliedJobs">0</div>
+                <div class="stat-label">Applied</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="interestedJobs">0</div>
+                <div class="stat-label">Interested</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="savedJobs">0</div>
+                <div class="stat-label">Saved</div>
+            </div>
+        </div>
+
+        <div class="filter-section" id="filterSection" style="display: none;">
+            <input type="text" class="search-input" id="searchFilter" placeholder="Search jobs..." onkeyup="filterJobs()">
+            <select class="filter-select" id="statusFilter" onchange="filterJobs()">
+                <option value="">All Status</option>
+                <option value="new">New</option>
+                <option value="applied">Applied</option>
+                <option value="interested">Interested</option>
+                <option value="saved">Saved</option>
+            </select>
+            <select class="filter-select" id="companyFilter" onchange="filterJobs()">
+                <option value="">All Companies</option>
+            </select>
+            <button class="export-btn" onclick="exportToCSV()">Export CSV</button>
+        </div>
+
+        <div id="loadingSection" class="loading" style="display: none;">
+            <h3>Extracting job information...</h3>
+            <p>Please wait while we process the job listings.</p>
+        </div>
+
+        <div class="jobs-container" id="jobsContainer"></div>
+    </div>
+
+    <script>
+        let allJobs = [];
+        let filteredJobs = [];
+
+        // Sample job data for demonstration
+        const sampleJobs = [
+            {
+                id: 1,
+                title: "Senior Engineering Manager",
+                company: "TechCorp Inc.",
+                location: "San Francisco, CA",
+                type: "Full-time",
+                experience: "5-8 years",
+                posted: "2 days ago",
+                description: "Lead a team of 10+ engineers in developing scalable web applications. Strong background in JavaScript, Python, and cloud technologies required. Experience with agile methodologies and team leadership essential.",
+                url: "https://linkedin.com/jobs/view/1234567",
+                status: "new"
+            },
+            {
+                id: 2,
+                title: "Engineering Manager - Platform",
+                company: "StartupXYZ",
+                location: "Remote",
+                type: "Full-time",
+                experience: "3-6 years",
+                posted: "1 day ago",
+                description: "Join our fast-growing startup to build and manage our platform engineering team. Looking for someone with experience in microservices, Kubernetes, and DevOps practices.",
+                url: "https://linkedin.com/jobs/view/2345678",
+                status: "new"
+            },
+            {
+                id: 3,
+                title: "Technical Engineering Manager",
+                company: "BigTech Solutions",
+                location: "Seattle, WA",
+                type: "Full-time",
+                experience: "7-10 years",
+                posted: "3 days ago",
+                description: "Lead multiple engineering teams working on our core product. Requires hands-on technical experience with modern web technologies and proven management track record.",
+                url: "https://linkedin.com/jobs/view/3456789",
+                status: "new"
+            },
+            {
+                id: 4,
+                title: "Software Engineering Manager",
+                company: "InnovateLabs",
+                location: "Austin, TX",
+                type: "Full-time",
+                experience: "4-7 years",
+                posted: "5 days ago",
+                description: "Manage engineering teams building AI-powered applications. Strong background in machine learning, data engineering, and software architecture required.",
+                url: "https://linkedin.com/jobs/view/4567890",
+                status: "new"
+            },
+            {
+                id: 5,
+                title: "Principal Engineering Manager",
+                company: "CloudFirst",
+                location: "New York, NY",
+                type: "Full-time",
+                experience: "8-12 years",
+                posted: "1 week ago",
+                description: "Senior leadership role overseeing cloud infrastructure and platform teams. Experience with AWS, Azure, and enterprise-scale systems required.",
+                url: "https://linkedin.com/jobs/view/5678901",
+                status: "new"
+            }
+        ];
+
+        function extractJobInfo() {
+            const url = document.getElementById('linkedinUrl').value;
+            
+            if (!url.includes('linkedin.com/jobs')) {
+                showError('Please enter a valid LinkedIn jobs search URL');
+                return;
+            }
+
+            showLoading();
+            
+            // Simulate API call delay
+            setTimeout(() => {
+                allJobs = [...sampleJobs];
+                filteredJobs = [...allJobs];
+                hideLoading();
+                displayJobs();
+                updateStats();
+                showFilters();
+                populateCompanyFilter();
+            }, 2000);
+        }
+
+        function showLoading() {
+            document.getElementById('loadingSection').style.display = 'block';
+            document.getElementById('jobsContainer').innerHTML = '';
+            document.getElementById('statsSection').style.display = 'none';
+            document.getElementById('filterSection').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('statsSection').style.display = 'grid';
+            document.getElementById('filterSection').style.display = 'flex';
+        }
+
+        function showFilters() {
+            document.getElementById('filterSection').style.display = 'flex';
+        }
+
+        function displayJobs() {
+            const container = document.getElementById('jobsContainer');
+            container.innerHTML = '';
+
+            filteredJobs.forEach(job => {
+                const jobCard = createJobCard(job);
+                container.appendChild(jobCard);
+            });
+        }
+
+        function createJobCard(job) {
+            const card = document.createElement('div');
+            card.className = 'job-card';
+            card.innerHTML = `
+                <div class="job-title">${job.title}</div>
+                <div class="company-name">${job.company}</div>
+                <div class="job-details">
+                    <span>📍 ${job.location}</span>
+                    <span>💼 ${job.type}</span>
+                    <span>⏱️ ${job.experience}</span>
+                    <span>📅 ${job.posted}</span>
+                </div>
+                <div class="job-description" id="desc-${job.id}">
+                    ${job.description}
+                    <button class="expand-btn" onclick="toggleDescription(${job.id})">Show more</button>
+                </div>
+                <div class="job-actions">
+                    <button class="action-btn ${job.status === 'applied' ? 'applied' : ''}" 
+                            onclick="updateJobStatus(${job.id}, 'applied')">
+                        ${job.status === 'applied' ? '✓ Applied' : 'Mark Applied'}
+                    </button>
+                    <button class="action-btn ${job.status === 'interested' ? 'interested' : ''}" 
+                            onclick="updateJobStatus(${job.id}, 'interested')">
+                        ${job.status === 'interested' ? '⭐ Interested' : 'Mark Interested'}
+                    </button>
+                    <button class="action-btn ${job.status === 'saved' ? 'applied' : ''}" 
+                            onclick="updateJobStatus(${job.id}, 'saved')">
+                        ${job.status === 'saved' ? '💾 Saved' : 'Save Job'}
+                    </button>
+                    <button class="action-btn" onclick="openJob('${job.url}')">View on LinkedIn</button>
+                </div>
+            `;
+            return card;
+        }
+
+        function toggleDescription(jobId) {
+            const desc = document.getElementById(`desc-${jobId}`);
+            desc.classList.toggle('expanded');
+            const btn = desc.querySelector('.expand-btn');
+            btn.textContent = desc.classList.contains('expanded') ? 'Show less' : 'Show more';
+        }
+
+        function updateJobStatus(jobId, status) {
+            const job = allJobs.find(j => j.id === jobId);
+            if (job) {
+                job.status = job.status === status ? 'new' : status;
+                displayJobs();
+                updateStats();
+            }
+        }
+
+        function openJob(url) {
+            window.open(url, '_blank');
+        }
+
+        function updateStats() {
+            const total = allJobs.length;
+            const applied = allJobs.filter(j => j.status === 'applied').length;
+            const interested = allJobs.filter(j => j.status === 'interested').length;
+            const saved = allJobs.filter(j => j.status === 'saved').length;
+
+            document.getElementById('totalJobs').textContent = total;
+            document.getElementById('appliedJobs').textContent = applied;
+            document.getElementById('interestedJobs').textContent = interested;
+            document.getElementById('savedJobs').textContent = saved;
+        }
+
+        function populateCompanyFilter() {
+            const companies = [...new Set(allJobs.map(job => job.company))];
+            const filter = document.getElementById('companyFilter');
+            filter.innerHTML = '<option value="">All Companies</option>';
+            companies.forEach(company => {
+                filter.innerHTML += `<option value="${company}">${company}</option>`;
+            });
+        }
+
+        function filterJobs() {
+            const searchTerm = document.getElementById('searchFilter').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const companyFilter = document.getElementById('companyFilter').value;
+
+            filteredJobs = allJobs.filter(job => {
+                const matchesSearch = job.title.toLowerCase().includes(searchTerm) || 
+                                    job.company.toLowerCase().includes(searchTerm) ||
+                                    job.description.toLowerCase().includes(searchTerm);
+                const matchesStatus = !statusFilter || job.status === statusFilter;
+                const matchesCompany = !companyFilter || job.company === companyFilter;
+
+                return matchesSearch && matchesStatus && matchesCompany;
+            });
+
+            displayJobs();
+        }
+
+        function exportToCSV() {
+            const headers = ['Title', 'Company', 'Location', 'Type', 'Experience', 'Posted', 'Status', 'URL'];
+            const csvContent = [
+                headers.join(','),
+                ...filteredJobs.map(job => [
+                    `"${job.title}"`,
+                    `"${job.company}"`,
+                    `"${job.location}"`,
+                    `"${job.type}"`,
+                    `"${job.experience}"`,
+                    `"${job.posted}"`,
+                    `"${job.status}"`,
+                    `"${job.url}"`
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `linkedin_jobs_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function showError(message) {
+            const container = document.getElementById('jobsContainer');
+            container.innerHTML = `<div class="error">${message}</div>`;
+        }
+    </script>
+</body>
+</html>
